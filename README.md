@@ -1,5 +1,9 @@
 # Added changes
 
+We're adding: 
+  - LCP and LCD algorithm
+  
+
 # Copied description from invbaverSim
 <p align="left">
   <img src="./res/images/inbaverSim.png" width="250"/>
