@@ -80,11 +80,9 @@ void CPSAlgorithms::generellOperations(ContentObjMsg *contentObjMsg,CSEntry *cse
                 << " " << currentCSSize
                 << endl;
 
-    // generate stats
+
     *additionalBytes = csentry->payloadSize;
     *removed = rem;
-//    emit(cacheAdditionsBytesSignal, csentry->payloadSize);
-//    emit(cacheSizeBytesSignal, currentCSSize);
 }
 
 
@@ -95,9 +93,6 @@ int CPSAlgorithms::getPIThobcount(ContentObjMsg *contentObjMsg) const
     const char *versionName = contentObjMsg->getVersionName();
     for (PITEntry* pit_i : this->cps_pit)
     {
-//        EV_INFO << " \n pit_i prefname: " << pit_i->prefixName
-//                << " \n contentobjMsg prefname: " << contentObjMsg->getPrefixName()
-//                << " \n compare: " <<  pit_i->prefixName.compare(prefName) << "\n";
         if ((pit_i->prefixName.compare(prefName)==0) && (pit_i->dataName.compare(dataName)==0) && (pit_i->versionName.compare(versionName) == 0))
         {
             return pit_i->hopsTravelled;
@@ -141,13 +136,7 @@ void CPSAlgorithms::removeCSEntry(int maximumContentStoreSize,ContentObjMsg *con
 
                 delete removingCSEntry;
             }
-            EV_INFO << "\n removed Bytes: " << removedBytes;
             *removed = removedBytes;
-            // generate stats
-//            if (removedBytes > 0) {
-//                emit(cacheRemovalsBytesSignal, removedBytes);
-//                emit(cacheSizeBytesSignal, currentCSSize);
-//            }
         }
 }
 
@@ -249,9 +238,6 @@ int CPSAlgorithms::Interesthandling(InterestMsg* interestMsg, PITEntry *pitEntry
 
         this->cps_pit.push_back(pitEntry);
 
-        // gen stats
-
-//        emit(pitEntryCountSignal, (long) this->cps_pit.size());
     }
     return 0;
 }

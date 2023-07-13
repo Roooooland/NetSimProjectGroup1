@@ -238,10 +238,6 @@ void RFC8569Forwarder::processTransportRegistration(TransportRegistrationMsg *tr
 
 void RFC8569Forwarder::processInterest(InterestMsg *interestMsg)
 {
-//    cout << simTime() << " " << getFullPath()
-//            << " interest received: "
-//            << interestMsg->getPrefixName() << " "
-//            << interestMsg->getDataName() << endl;
 
     // get arrival gate details
     cGate *arrivalGate = interestMsg->getArrivalGate();
@@ -276,10 +272,9 @@ void RFC8569Forwarder::processInterest(InterestMsg *interestMsg)
                                     interestMsg->getVersionName(), interestMsg->getSegmentNum());
 
 
-    EV_INFO << "\n Interest Msg before csEntry != NULL --------------------------\n";
+
     // when Content Obj is in CS, send it to the Interest sender
     if (csEntry != NULL) {
-        EV_INFO << "\n Interest Msg in csEntry != NULL ... so hit-------------------------------\n";
 
         // generate hit stats
         hitCount++;
@@ -308,8 +303,6 @@ void RFC8569Forwarder::processInterest(InterestMsg *interestMsg)
         if (arrivalTransportInfo != NULL) {
             contentObjMsg->addObject(arrivalTransportInfo);
         }
-        EV_INFO << "\n -------------------------------------------------------------------- \n";
-
         EV_INFO << simTime() << " Sending ContentObj from Cache: "
                 << csEntry->prefixName
                 << " " << csEntry->dataName
@@ -324,7 +317,6 @@ void RFC8569Forwarder::processInterest(InterestMsg *interestMsg)
         cGate *sendingGate = gate(arrivalFaceEntry->outputGateName.c_str(), arrivalFaceEntry->gateIndex);
         send(contentObjMsg, sendingGate);
 
-        EV_INFO << "\n -------------------------------------------------------------------- \n";
         // generate stats
         if (arrivalFaceEntry->faceType == TransportTypeFace) {
             emit(totalContentObjsBytesSentSignal, (long) contentObjMsg->getByteLength());
@@ -353,126 +345,24 @@ void RFC8569Forwarder::processInterest(InterestMsg *interestMsg)
                                     interestMsg->getVersionName(), interestMsg->getSegmentNum());
 
     dumpPIT();
-///////////////////////////////////////////////
+
     CPSAlgorithms *cpsalgorithm = new CPSAlgorithms();
     cpsalgorithm->setValues(this->choose_algorithm, this->cs, this->pit, this->currentCSSize);
 
     ArrivalInfo *arrivalInfo = new ArrivalInfo();
 
     int status = cpsalgorithm->Interesthandling(interestMsg, pitEntry,arrivalInfo,arrivalFaceEntry,arrivalTransportInfo);
-    //gen stats
+
     this->pit = cpsalgorithm->getPIT();
-    EV_INFO << "\nstatus: " << status <<"\n";
+
     if (status == -1) {
         EV_INFO << "\n return \n";
         return;
     }
-
+    //gen stats
     emit(pitEntryCountSignal, (long) pit.size());
 
     delete cpsalgorithm;
-///////////////////////////////////////////////
-//    // when there is already a PIT entry, means previous Interests were
-//    // received, so add the current Interest to the PIT entry
-//    if (pitEntry != NULL) {
-//
-//        // Check if the same Interest was received through the same Face and transport address
-//        bool found = false;
-//        for (int i = 0; i < pitEntry->arrivalInfoList.size(); i++) {
-//            if (pitEntry->arrivalInfoList[i]->receivedFace->faceID == arrivalFaceEntry->faceID) {
-//                if (arrivalTransportInfo != NULL) {
-//                    if (arrivalTransportInfo->transportAddress == pitEntry->arrivalInfoList[i]->receivedFace->transportAddress) {
-//                        found = true;
-//                        break;
-//                    }
-//                } else {
-//                    found = true;
-//                    break;
-//                }
-//            }
-//        }
-//
-//        // when same Interest was not received from same Face and same transport address
-//        // then add it to PIT entry
-//        if (!found) {
-//            ArrivalInfo *arrivalInfo = new ArrivalInfo();
-//            arrivalInfo->receivedFace = arrivalFaceEntry;
-//            if (arrivalTransportInfo != NULL) {
-//                arrivalInfo->transportAddress = arrivalTransportInfo->transportAddress;
-//            } else {
-//                arrivalInfo->transportAddress = "";
-//            }
-//
-//            EV_INFO << simTime() << "PIT entry exists. Adding new arrival Face: "
-//                    << pitEntry->prefixName
-//                    << " " << pitEntry->dataName
-//                    << " " << pitEntry->versionName
-//                    << " " << pitEntry->segmentNum
-//                    << " " << pitEntry->hopLimit
-//                    << " " << pitEntry->hopsTravelled
-//                    << " " << arrivalFaceEntry->faceID
-//                    << " " << arrivalInfo->transportAddress
-//                    << endl;
-//
-//            pitEntry->arrivalInfoList.push_back(arrivalInfo);
-//        }
-//
-//        // discard Interest
-//        delete interestMsg;
-//        return;
-//    }
-//
-//    // discard interest if it has reached the maximum hop count
-//    // only if they arrive from transport type faces (not applications)
-//    if (arrivalFaceEntry->faceType == TransportTypeFace && (interestMsg->getHopLimit() - 1) <= 0) {
-//
-//        EV_INFO << simTime() << "Hop limit exceeded. Discarding Interest: "
-//                << interestMsg->getHopLimit()
-//                << " " << interestMsg->getHopsTravelled()
-//                << " " << arrivalFaceEntry->faceDescription
-//                << endl;
-//
-//        delete interestMsg;
-//        return;
-//    }
-//
-//
-//    // save Interest in PIT - create new PIT entry
-//    pitEntry = new PITEntry;
-//    pitEntry->prefixName = interestMsg->getPrefixName();
-//    pitEntry->dataName = interestMsg->getDataName();
-//    pitEntry->versionName = interestMsg->getVersionName();
-//    pitEntry->segmentNum = interestMsg->getSegmentNum();
-//    pitEntry->hopLimit = interestMsg->getHopLimit() - 1;
-//    pitEntry->hopsTravelled = interestMsg->getHopsTravelled() + 1;
-//
-//    ArrivalInfo *arrivalInfo = new ArrivalInfo();
-//    arrivalInfo->receivedFace = arrivalFaceEntry;
-//    if (arrivalTransportInfo != NULL) {
-//        arrivalInfo->transportAddress = arrivalTransportInfo->transportAddress;
-//    } else {
-//        arrivalInfo->transportAddress = "";
-//    }
-//    pitEntry->arrivalInfoList.push_back(arrivalInfo);
-//
-//    EV_INFO << simTime() << "Adding PIT entry: "
-//            << pitEntry->prefixName
-//            << " " << pitEntry->dataName
-//            << " " << pitEntry->versionName
-//            << " " << pitEntry->segmentNum
-//            << " " << pitEntry->hopLimit
-//            << " " << pitEntry->hopsTravelled
-//            << " " << arrivalFaceEntry->faceID
-//            << " " << arrivalInfo->transportAddress
-//            << endl;
-//
-//    pit.push_back(pitEntry);
-//
-//    // gen stats
-//    emit(pitEntryCountSignal, (long) pit.size());
-//
-//
-//////////////////////////////////////////////////////
     // find which FIB entry to use to forward the Interest
     FIBEntry *fibEntry = longestPrefixMatchingInFIB(interestMsg->getPrefixName());
 
@@ -538,11 +428,7 @@ void RFC8569Forwarder::processInterest(InterestMsg *interestMsg)
 //here is LCE implemented
 void RFC8569Forwarder::processContentObj(ContentObjMsg *contentObjMsg)
 {
-//    cout << simTime() << " " << getFullPath()
-//            << " content obj received: "
-//            << contentObjMsg->getPrefixName() << " "
-//            << contentObjMsg->getDataName() << endl;
-    EV_INFO << "CS--------------------------------------------------------------------------------\n";
+
     // get arrival gate details
     cGate *arrivalGate = contentObjMsg->getArrivalGate();
     int arrivalGateIndex =  (arrivalGate->isVector() ? arrivalGate->getIndex() : (-1));
@@ -579,37 +465,7 @@ void RFC8569Forwarder::processContentObj(ContentObjMsg *contentObjMsg)
         delete contentObjMsg;
         return;
     }
-///////////////////////////////////
-//    // before adding content to CS, check if size will exceed the limit
-//    // when so, remove cache entries until the new content can be added
-//    if (maximumContentStoreSize > 0) {
-//        long removedBytes = 0;
-//        while ((currentCSSize + contentObjMsg->getPayloadSize()) > maximumContentStoreSize) {
-//            CSEntry *removingCSEntry = cs.front();
-//            cs.pop_front();
-//            currentCSSize -= removingCSEntry->payloadSize;
-//            removedBytes += removingCSEntry->payloadSize;
-//
-//            EV_INFO << simTime() << "Cache is full, cannot insert, removing: "
-//                    << " " << removingCSEntry->prefixName
-//                    << " " << removingCSEntry->dataName
-//                    << " " << removingCSEntry->versionName
-//                    << " " << removingCSEntry->segmentNum
-//                    << " " << removingCSEntry->payloadSize
-//                    << " " << currentCSSize
-//                    << endl;
-//
-//            delete removingCSEntry;
-//        }
-//
-//        // generate stats
-//        if (removedBytes > 0) {
-//            emit(cacheRemovalsBytesSignal, removedBytes);
-//            emit(cacheSizeBytesSignal, currentCSSize);
-//        }
-//    }
 
-/////////////////////////////////////
     CPSAlgorithms *cpsalgorithm = new CPSAlgorithms();
     cpsalgorithm->setValues(this->choose_algorithm, cs, pit,currentCSSize);
 
@@ -632,41 +488,8 @@ void RFC8569Forwarder::processContentObj(ContentObjMsg *contentObjMsg)
     emit(cacheSizeBytesSignal, currentCSSize);
 
     delete cpsalgorithm;
-//////////////////////////////////////////
 
-//
-//    csEntry = new CSEntry;
-//    csEntry->prefixName = contentObjMsg->getPrefixName();
-//    csEntry->dataName = contentObjMsg->getDataName();
-//    csEntry->versionName = contentObjMsg->getVersionName();
-//    csEntry->segmentNum = contentObjMsg->getSegmentNum();
-//    csEntry->cachetime = contentObjMsg->getCachetime();
-//    csEntry->expirytime = contentObjMsg->getExpirytime();
-//    csEntry->totalNumSegments = contentObjMsg->getTotalNumSegments();
-//    csEntry->payloadAsString = contentObjMsg->getPayloadAsString();
-//    csEntry->payloadSize = contentObjMsg->getPayloadSize();
-//    cs.push_back(csEntry);
-//    currentCSSize += contentObjMsg->getPayloadSize();
-//
-//
-//    EV_INFO << simTime() << "Added Cache entry: "
-//            << " " << csEntry->prefixName
-//            << " " << csEntry->dataName
-//            << " " << csEntry->versionName
-//            << " " << csEntry->segmentNum
-//            << " " << csEntry->payloadSize
-//            << " " << currentCSSize
-//            << endl;
-//
-//    // generate stats
-//    emit(cacheAdditionsBytesSignal, csEntry->payloadSize);
-//    emit(cacheSizeBytesSignal, currentCSSize);
-
-//////////////////////////////////////////////////////////////
-
-    //multiNode based caching properties
     // find the PIT entry, if there is one saved
-    //if (this->choose_algorithm < 2) {
     PITEntry *pitEntry = getPITEntry(contentObjMsg->getPrefixName(), contentObjMsg->getDataName(),
                             contentObjMsg->getVersionName(), contentObjMsg->getSegmentNum());
 
