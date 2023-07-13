@@ -1,10 +1,24 @@
 # Added changes
 
-We're adding: 
-  - LCP and LCD algorithm
-  
+Changes to inbaverSim:
+  - added module for the different CPS algorithms
 
-# Copied description from invbaverSim
+Added algorithms: 
+  - LCP and LCD algorithm
+
+## Deploying the different algorithms
+
+A specific algorithm is chosen from the .ini file of the network.
+```
+**.*.fwd.choose_algorithm = 0
+```
+Since three algorithms are implemented are the value of choose_algorithm is:
+  - 0 for LCE
+  - 1 for LCP
+  - 2 for LCD
+
+
+# Copied description from inbaverSim
 <p align="left">
   <img src="./res/images/inbaverSim.png" width="250"/>
 </p>
